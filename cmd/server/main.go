@@ -4,6 +4,8 @@ import (
 	"database/sql"
 	"net/http"
 
+	"github.com/go-chi/chi"
+	"github.com/go-chi/chi/middleware"
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/pedrohenmonteiro/golang-api/configs"
 	"github.com/pedrohenmonteiro/golang-api/internal/infra/database"
@@ -30,8 +32,13 @@ func main() {
 	productDB := database.NewProduct(db)
 	productHandler := handlers.NewProductHandler(productDB)
 
-	http.HandleFunc("/products", productHandler.CreateProduct)
-	http.ListenAndServe(":8080", nil)
+	r := chi.NewRouter()
+	r.Use(middleware.Logger)
+	r.Post("/products", productHandler.CreateProduct)
+	r.Get("/products/{id}", productHandler.GetProduct)
+
+	// http.HandleFunc("/products", productHandler.CreateProduct)
+	http.ListenAndServe(":8080", r)
 }
 
 func autoMigrate(db *sql.DB) error {
