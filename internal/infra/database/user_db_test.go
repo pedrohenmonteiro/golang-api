@@ -59,7 +59,6 @@ func TestFindByEmail(t *testing.T) {
 //auxiliares
 
 func OpenDBAndCreateTable() (*sql.DB, error) {
-	// Abre o banco de dados SQLite em memória
 	db, err := sql.Open("sqlite3", ":memory:")
 	if err != nil {
 		return nil, err
@@ -80,13 +79,11 @@ func OpenDBAndCreateTable() (*sql.DB, error) {
 }
 
 func DropTableAndCloseDB(db *sql.DB) error {
-	// Exclui a tabela se ela existir
 	_, err := db.Exec("DROP TABLE IF EXISTS users")
 	if err != nil {
 		return err
 	}
 
-	// Fecha a conexão com o banco de dados
 	err = db.Close()
 	if err != nil {
 		return err
