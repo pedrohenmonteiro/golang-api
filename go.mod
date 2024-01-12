@@ -5,6 +5,7 @@ go 1.21.5
 require (
 	github.com/go-chi/jwtauth v1.2.0
 	github.com/google/uuid v1.4.0
+	github.com/mattn/go-sqlite3 v1.14.19
 	github.com/spf13/viper v1.18.2
 	github.com/stretchr/testify v1.8.4
 	golang.org/x/crypto v0.16.0
