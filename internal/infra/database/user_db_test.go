@@ -10,12 +10,14 @@ import (
 )
 
 func TestCreateUser(t *testing.T) {
-	db, err := OpenDBAndCreateTable()
-	if err != nil {
-		t.Error(err)
-	}
+	db, err := openDBUserAndCreateTable()
+	assert.NoError(t, err)
 
-	user, _ := entity.NewUser("Pedro", "p@m.com", "123456")
+	defer dropTableUserAndCloseDB(db)
+
+	user, err := entity.NewUser("Pedro", "p@m.com", "123456")
+	assert.NoError(t, err)
+
 	userDB := NewUser(db)
 
 	err = userDB.Create(user)
@@ -31,16 +33,16 @@ func TestCreateUser(t *testing.T) {
 	assert.Equal(t, user.Email, userFound.Email)
 	assert.NotNil(t, userFound.Password)
 
-	DropTableAndCloseDB(db)
 }
 
 func TestFindByEmail(t *testing.T) {
-	db, err := OpenDBAndCreateTable()
-	if err != nil {
-		t.Error(err)
-	}
+	db, err := openDBUserAndCreateTable()
+	assert.NoError(t, err)
 
-	user, _ := entity.NewUser("Pedro", "p@m.com", "123456")
+	defer dropTableUserAndCloseDB(db)
+
+	user, err := entity.NewUser("Pedro", "p@m.com", "123456")
+	assert.NoError(t, err)
 	userDB := NewUser(db)
 
 	err = userDB.Create(user)
@@ -58,7 +60,7 @@ func TestFindByEmail(t *testing.T) {
 
 //auxiliares
 
-func OpenDBAndCreateTable() (*sql.DB, error) {
+func openDBUserAndCreateTable() (*sql.DB, error) {
 	db, err := sql.Open("sqlite3", ":memory:")
 	if err != nil {
 		return nil, err
@@ -78,7 +80,7 @@ func OpenDBAndCreateTable() (*sql.DB, error) {
 	return db, nil
 }
 
-func DropTableAndCloseDB(db *sql.DB) error {
+func dropTableUserAndCloseDB(db *sql.DB) error {
 	_, err := db.Exec("DROP TABLE IF EXISTS users")
 	if err != nil {
 		return err

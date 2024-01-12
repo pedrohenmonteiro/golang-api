@@ -29,6 +29,41 @@ func (p *Product) Create(product *entity.Product) error {
 	return nil
 }
 
+func (p *Product) FindAll(page, limit int, sort string) ([]entity.Product, error) {
+	if sort != "" && sort != "asc" && sort != "desc" {
+		sort = "asc"
+	}
+	offset := (page - 1) * limit
+
+	query := "select * from products order by created_at " + sort + " limit ? offset ?"
+
+	stmt, err := p.DB.Prepare(query)
+	if err != nil {
+		return nil, err
+	}
+	defer stmt.Close()
+
+	rows, err := stmt.Query(limit, offset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var products []entity.Product
+
+	for rows.Next() {
+		var p entity.Product
+		err := rows.Scan(&p.ID, &p.Name, &p.Price, &p.CreatedAt)
+		if err != nil {
+			return nil, err
+		}
+		products = append(products, p)
+	}
+
+	return products, err
+
+}
+
 func (p *Product) FindByID(id string) (*entity.Product, error) {
 	stmt, err := p.DB.Prepare("select * from products where id = ?")
 	if err != nil {
@@ -51,13 +86,13 @@ func (p *Product) Update(product *entity.Product) error {
 		return err
 	}
 
-	stmt, err := p.DB.Prepare("update products set name = ?, set price = ? where id = ?")
+	stmt, err := p.DB.Prepare("update products set name = ?, price = ? where id = ?")
 	if err != nil {
 		return err
 	}
-	stmt.Close()
+	defer stmt.Close()
 
-	_, err = stmt.Exec(product.Name, product.Price)
+	_, err = stmt.Exec(product.Name, product.Price, product.ID)
 	if err != nil {
 		return err
 	}
