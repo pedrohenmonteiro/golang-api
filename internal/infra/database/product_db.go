@@ -35,18 +35,30 @@ func (p *Product) FindAll(page, limit int, sort string) ([]entity.Product, error
 	}
 	offset := (page - 1) * limit
 
-	query := "select * from products order by created_at " + sort + " limit ? offset ?"
+	var (
+		query string
+		rows  *sql.Rows
+		err   error
+	)
 
-	stmt, err := p.DB.Prepare(query)
-	if err != nil {
-		return nil, err
-	}
-	defer stmt.Close()
+	if limit != 0 && page != 0 {
+		query = "select * from products order by created_at " + sort + " limit ? offset ?"
+		stmt, err := p.DB.Prepare(query)
+		if err != nil {
+			return nil, err
+		}
+		defer stmt.Close()
 
-	rows, err := stmt.Query(limit, offset)
-	if err != nil {
-		return nil, err
+		rows, err = stmt.Query(limit, offset)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+
+		query = "select * from products"
+		rows, err = p.DB.Query(query)
 	}
+
 	defer rows.Close()
 
 	var products []entity.Product
